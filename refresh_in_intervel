@@ -1,0 +1,51 @@
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+# Function to show the notification
+function Show-Notification {
+    # Create a form
+    $form = New-Object Windows.Forms.Form
+    $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::None
+    $form.BackColor = [System.Drawing.Color]::Yellow
+    $form.TopMost = $true
+    $form.Width = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds.Width
+    $form.Height = 50
+    $form.StartPosition = 'Manual'
+    $form.Location = New-Object System.Drawing.Point(0, -$form.Height)
+
+    # Add a label with the message
+    $label = New-Object Windows.Forms.Label
+    $label.Text = "Please check the dashboard"
+    $label.Font = New-Object System.Drawing.Font("Arial", 16, [System.Drawing.FontStyle]::Bold)
+    $label.TextAlign = 'MiddleCenter'
+    $label.Dock = 'Fill'
+    $form.Controls.Add($label)
+
+    # Animation settings
+    $slideDownSpeed = 5
+    $stayVisibleTime = 5000
+
+    # Slide the notification down from the top of the screen
+    $timer = New-Object Windows.Forms.Timer
+    $timer.Interval = 10
+    $timer.Add_Tick({
+        if ($form.Top -lt 0) {
+            $form.Top += $slideDownSpeed
+        } else {
+            $timer.Stop()
+            # After staying visible for a few seconds, hide the notification
+            Start-Sleep -Milliseconds $stayVisibleTime
+            $form.Close()
+        }
+    })
+    $timer.Start()
+
+    # Show the form
+    $form.ShowDialog()
+}
+
+# Loop to display the notification every minute
+while ($true) {
+    Show-Notification
+    Start-Sleep -Seconds 60  # Wait for 60 seconds before showing the next notification
+}
